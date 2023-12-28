@@ -1,5 +1,6 @@
 package com.example.demo1.DBFunctions;
 
+import com.example.demo1.Models.Care;
 import com.example.demo1.Models.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +13,7 @@ public class DbFunctions {
         Connection connection = null;
         try {
             Class.forName("org.postgresql.Driver");
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + "zxc1", "postgres", "123");
+            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + "exam", "postgres", "123");
             if (connection != null) {
                 System.out.println("Connection successful");
             } else {
@@ -24,10 +25,10 @@ public class DbFunctions {
         return connection;
     }
 
-    public void createUser(String login, String password, String surname, String name, String patronymic, String phone, String image) {
+    public void createUser(String firstname, String lastname, String login, String password) {
         try {
-            String query = String.format("insert into users(login, password, SurName, FirstName, LastName, Phone, image) values('%s','%s', '%s','%s','%s','%s', '%s');",
-                    login, password, surname, name, patronymic, phone, image);
+            String query = String.format("insert into users(firstname, lastname, login, password) values('%s','%s', '%s','%s');",
+                    firstname, lastname, login, password);
             Statement statement = connect_to_db().createStatement();
             statement.executeUpdate(query);
             System.out.println("User created");
@@ -57,6 +58,11 @@ public class DbFunctions {
             String query = String.format("select * from users where login = '%s' and password = '%s'", login, password);
             Statement statement = connect_to_db().createStatement();
             ResultSet resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                System.out.println("");
+            } else {
+                return 0;
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return 404;
@@ -64,23 +70,21 @@ public class DbFunctions {
         return 201;
     }
 
-    public ObservableList<User> getAllUsers() {
-        ObservableList<User> users = FXCollections.observableArrayList();
+    public ObservableList<Care> getAllCares() {
+        ObservableList<Care> cares = FXCollections.observableArrayList();
         try {
-            ResultSet resultSet = connect_to_db().createStatement().executeQuery("select id, firstname, lastname, login,  password from users");
+            ResultSet resultSet = connect_to_db().createStatement().executeQuery("select id, animal, nameCare from care");
             while (resultSet.next()) {
-                users.add(new User(
+                cares.add(new Care(
                         resultSet.getString("id"),
-                        resultSet.getString("firstname"),
-                        resultSet.getString("lastname"),
-                        resultSet.getString("login"),
-                        resultSet.getString("password")
+                        resultSet.getString("animal"),
+                        resultSet.getString("nameCare")
                 ));
             }
-            return users;
+            return cares;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            return users;
+            return cares;
         }
     }
 
